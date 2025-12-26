@@ -28,7 +28,7 @@ exports.createProduct = async (req, res) => {
       minOrderQty: Number(minOrderQty),
       availableQty: availableQty ? Number(availableQty) : 0,
       isPrepped: isPrepped === 'true' || isPrepped === true,
-      artisan: req.user.id,
+      artisan: req.user.id || req.user._id,
       shipping: {
         zones: shippingZones ? shippingZones.split(',').map(zone => zone.trim()) : [],
         cost: shippingCost ? Number(shippingCost) : 0

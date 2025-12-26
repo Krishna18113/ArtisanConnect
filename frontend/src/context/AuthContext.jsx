@@ -63,6 +63,25 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const resendOtp = async (email) => {
+  try {
+    const res = await authService.resendOtp(email);
+    toast({
+      title: 'OTP Resent',
+      description: res.data.msg || 'New OTP sent to your email',
+    });
+    return { success: true, message: res.data.msg };
+  } catch (err) {
+    toast({
+      title: 'Resend Failed',
+      description: err.response?.data?.msg || 'Could not resend OTP',
+      variant: 'destructive',
+    });
+    return { success: false };
+  }
+};
+
+
   const verifyOtp = async (email, otp, role) => {
     try {
       const res = await authService.verifyOtp({ email, otp, role });
@@ -87,7 +106,16 @@ export const AuthProvider = ({ children }) => {
     toast({ title: 'Logged Out' });
   };
 
-  const value = { user, isAuthenticated: !!user, login, register, logout, verifyOtp };
+  const value = {
+  user,
+  isAuthenticated: !!user,
+  login,
+  register,
+  resendOtp,   // 👈 ADD THIS
+  logout,
+  verifyOtp,
+};
+
 
   return (
     <AuthContext.Provider value={value}>

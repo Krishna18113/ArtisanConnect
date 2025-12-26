@@ -20,7 +20,14 @@ const Register = () => {
   const [registrationEmail, setRegistrationEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [emailError, setEmailError] = useState('');
-  const { register: authRegister, isAuthenticated, verifyOtp: authVerifyOtp } = useAuth();
+  // const { register: authRegister, isAuthenticated, verifyOtp: authVerifyOtp } = useAuth();
+  const {
+  register: authRegister,
+  resendOtp,
+  isAuthenticated,
+  verifyOtp: authVerifyOtp
+} = useAuth();
+
   const { toast } = useToast();
 
   const emailRegex = /^[\w-]+(?:\.[\w-]+)*@(?:[\w-]+\.)+[a-zA-Z]{2,7}$/;
@@ -81,18 +88,40 @@ const Register = () => {
     setIsLoading(false);
   };
 
+  // const handleResendOtp = async () => {
+  //   setIsLoading(true);
+  //   const { confirmPassword, ...rest } = formData;
+  //   const userData = { ...rest, email: registrationEmail, address: { ...formData.address } };
+  //   const response = await authRegister(userData);
+  //   if (response?.success) {
+  //     toast({ title: "OTP Resent", description: response.message || "A new OTP has been sent." });
+  //   } else if (response?.message) {
+  //     toast({ title: "Error Resending OTP", description: response.message, variant: "destructive" });
+  //   }
+  //   setIsLoading(false);
+  // };
   const handleResendOtp = async () => {
-    setIsLoading(true);
-    const { confirmPassword, ...rest } = formData;
-    const userData = { ...rest, email: registrationEmail, address: { ...formData.address } };
-    const response = await authRegister(userData);
-    if (response?.success) {
-      toast({ title: "OTP Resent", description: response.message || "A new OTP has been sent." });
-    } else if (response?.message) {
-      toast({ title: "Error Resending OTP", description: response.message, variant: "destructive" });
-    }
-    setIsLoading(false);
-  };
+  if (isLoading) return;
+  setIsLoading(true);
+
+  const response = await resendOtp(registrationEmail);
+
+  if (response?.success) {
+    toast({
+      title: "OTP Resent",
+      description: response.message || "A new OTP has been sent."
+    });
+  } else if (response?.message) {
+    toast({
+      title: "Error Resending OTP",
+      description: response.message,
+      variant: "destructive"
+    });
+  }
+
+  setIsLoading(false);
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-pink-50 to-yellow-50">

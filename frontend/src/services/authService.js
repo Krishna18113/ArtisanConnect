@@ -39,3 +39,7 @@ export const resetPassword = (data) => {
 export const verifyPasswordResetOtp = (data) => {
   return api.post('/verify-password-reset-otp', data);
 };
+
+export const resendOtp = (email) => {
+  return api.post('/resend-otp', { email });
+};
