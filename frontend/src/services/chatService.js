@@ -23,3 +23,4 @@ export const markConversationAsRead = (conversationId) => {
 export const getUnreadMessageCount = () => {
   return api.get('/conversations/unread-count');
 };
+/**/
