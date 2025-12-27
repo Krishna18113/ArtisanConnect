@@ -1,13 +1,24 @@
 # 🎨 ArtisanConnect
 > **Bridging the gap between local artisans and global buyers through smart, location-aware commerce.**
 
-![ArtisanConnect Banner](https://via.placeholder.com/1200x400?text=ArtisanConnect+Hackathon+Project)
+<div align="center">
+  <img src="./frontend/src/assets/rider.png" alt="ArtisanConnect Banner" width="250" />
+  <br />
+</div>
+
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
+
+---
+
+## 🚀 Live Demo
+**[Click here to Explore the Artisan Marketplace](https://artisan-connect-pi.vercel.app/)** *(Note: As this is hosted on a free tier, the server may take a minute to spin up on the first load.)*
+
+---
 
 ## 📖 Introduction
 
@@ -17,14 +28,19 @@ Built during a hackathon, this project solves the problem of "visibility" for sm
 
 ## 📸 Screenshots
 
-| **Landing Page** | **Artisan Dashboard** |
+| **Landing Page** | **Registration Page** |
 |:---:|:---:|
-| ![Landing](https://via.placeholder.com/400x200?text=Landing+Page) | ![Dashboard](https://via.placeholder.com/400x200?text=Analytics+Dashboard) |
-| *User-friendly Landing Page* | *Revenue & Product Analytics* |
+| ![Landing](./frontend/src/assets/LandingPage.png) | ![Dashboard](./frontend/src/assets/RegistrationPage.png) |
+| *User-friendly Landing Page* | *User-friendly Registration Page* |
+
+| **Product Catalog** | **Order Management** |
+|:---:|:---:|
+| ![Products](./frontend/src/assets/ProductCatalog.png) | ![Orders](./frontend/src/assets/OrderManagement.png) |
+| *Search, Filter & Currency Conversion* | *Status Tracking & History* |
 
 | **AI Recommendations** | **Map & Tracking** |
 |:---:|:---:|
-| ![Reco](https://via.placeholder.com/400x200?text=AI+Recommendations) | ![Maps](https://via.placeholder.com/400x200?text=Live+Tracking) |
+| ![Reco](./frontend/src/assets/AIRecommendation.png) | ![Maps](./frontend/src/assets/MapTracking.png) |
 | *Context-aware Suggestions* | *Real-time Routing* |
 
 ## ✨ Key Features
@@ -134,7 +150,9 @@ VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 ```
 
 ## 🤝 The Team
-Built with ❤️ by [Your Team Name]
-- [Your Name] - Full Stack & System Design
-- [Teammate Name] - Frontend & UI/UX
-- [Teammate Name] - ML & Backend Integration
+Built with ❤️ by CodeSurfers
+- Gattu Krishna Venkat Sai - Full Stack & System Design
+- Dasari Sai Teja - Frontend & UI/UX
+- C. Madhusudhan - ML & Backend Integration
+
+## Built with ❤️, Caffeine, and Sleepless Nights.
