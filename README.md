@@ -43,6 +43,11 @@ Built during a hackathon, this project solves the problem of "visibility" for sm
 | ![Reco](./frontend/src/assets/AIRecommendation.png) | ![Maps](./frontend/src/assets/MapTracking.png) |
 | *Context-aware Suggestions* | *Real-time Routing* |
 
+| **Multi-Language Support** | **User Controls** |
+|:---:|:---:|
+| ![Translated Interface](./frontend/src/assets/LangChange.png) | ![Language Menu](./frontend/src/assets/ChoosingLang.png) |
+| *Example: Interface Translated to Hindi* | *Dynamic Google Translate Integration* |
+
 ## ✨ Key Features
 
 ### 🛍️ For Buyers
