@@ -292,7 +292,7 @@ const Products = () => {
                         <span className="text-xl font-bold text-green-700">
                           {product.convertedCurrency
                             ? `${product.convertedCurrency} ${product.pricePerKg.toFixed(2)}`
-                            : `₹${product.pricePerKg}`}
+                            : `${product.pricePerKg}`}
                         </span>
                         <span className="text-gray-500">/{product.unit}</span>
                       </div>
