@@ -25,6 +25,18 @@ const CONTEXT_KEYWORDS = {
   christmas: ['christmas', 'cake', 'gift', 'decor', 'candle', 'winter'],
 };
 
+const GENERAL_KEYWORDS = ['handmade', 'local', 'artisan', 'traditional', 'organic', 'fresh', 'natural'];
+
+function itemText(item) {
+  return [
+    item.name,
+    item.category,
+    item.material,
+    item.description,
+    item.tags ? item.tags.join(' ') : '',
+  ].filter(Boolean).join(' ').toLowerCase();
+}
+
 function contextBoost(item, context) {
   const activeContexts = [
     context.season,
@@ -38,16 +50,29 @@ function contextBoost(item, context) {
 
   if (!keywords.length) return 0;
 
-  const text = [
-    item.name,
-    item.category,
-    item.material,
-    item.description,
-    item.tags ? item.tags.join(' ') : '',
-  ].filter(Boolean).join(' ').toLowerCase();
+  const text = itemText(item);
 
   const matches = keywords.filter(keyword => text.includes(keyword)).length;
   return Math.min(matches * 0.08, 0.4);
+}
+
+function localContextScore(item, context) {
+  const text = itemText(item);
+  const generalMatches = GENERAL_KEYWORDS.filter(keyword => text.includes(keyword)).length;
+  const ratingBoost = Math.min(Number(item.averageRating) || 0, 5) * 0.02;
+  const recencyBoost = item.createdAt ? Math.max(0, 0.05 - ((Date.now() - new Date(item.createdAt).getTime()) / 86400000) * 0.001) : 0;
+
+  return contextBoost(item, context) + generalMatches * 0.02 + ratingBoost + recencyBoost;
+}
+
+async function embeddingRank(ctx, candidateItems, itemIds, context) {
+  const itemTexts = candidateItems.map(item => itemText(item));
+  const [ctxVec, ...itemVecs] = await embedTexts([ctx, ...itemTexts]);
+
+  return itemVecs.map((v, i) => ({
+    id: itemIds[i],
+    score: cosine(ctxVec, v) + localContextScore(candidateItems[i], context),
+  }));
 }
 
 exports.recommend = async (req, res) => {
@@ -64,28 +89,27 @@ exports.recommend = async (req, res) => {
       `weather=${context.weather || 'normal'}`
     ].join('; ');
 
-    // 2) Build a short text per item (title/category/material/description if present)
+    if (!candidate_items.length) {
+      return res.json({ recommendations: [] });
+    }
+
+    // 2) Rank locally by season/festival/product metadata. This keeps recommendations fast
+    // during demos and avoids a network call per product on every request.
     const itemIds = candidate_items.map(c => c.id);
-    const itemTexts = candidate_items.map(c => {
-      const parts = [
-        c.name, c.category, c.material,
-        c.description,
-        c.tags ? c.tags.join(' ') : ''
-      ].filter(Boolean);
-      return parts.join(' | ');
-    });
-
-    // 3) Get embeddings for [context, ...items]
-    const [ctxVec, ...itemVecs] = await embedTexts([ctx, ...itemTexts]);
-
-    // 4) Rank by cosine similarity
-    const scored = itemVecs.map((v, i) => ({
+    let scored = candidate_items.map((item, i) => ({
       id: itemIds[i],
-      score: cosine(ctxVec, v) + contextBoost(candidate_items[i], context),
+      score: localContextScore(item, context),
     }));
+
+    // 3) Optional embedding ranking for production. Disabled by default because the hosted
+    // Hugging Face call can be slow when done per request.
+    if (process.env.USE_HF_RECO === 'true') {
+      scored = await embeddingRank(ctx, candidate_items, itemIds, context);
+    }
+
     scored.sort((a, b) => b.score - a.score);
 
-    // 5) Return top N ids
+    // 4) Return top N ids
     return res.json({ recommendations: scored.slice(0, 10).map(s => s.id) });
   } catch (e) {
     console.error('Reco error:', e?.response?.data || e?.message);

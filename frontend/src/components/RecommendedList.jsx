@@ -40,10 +40,15 @@ export default function RecommendedList({ user, location }) {
   useEffect(() => {
     async function run() {
       // 1) fetch products and remove anything the buyer has already ordered
-      const [res, ordersRes] = await Promise.all([
+      const [productsResult, ordersResult] = await Promise.allSettled([
         getProducts({}),
-        getMyDirectOrders(),
+        user?.role === 'buyer' ? getMyDirectOrders() : Promise.resolve({ data: [] }),
       ]);
+
+      if (productsResult.status === 'rejected') throw productsResult.reason;
+
+      const res = productsResult.value;
+      const ordersRes = ordersResult.status === 'fulfilled' ? ordersResult.value : { data: [] };
       const products = Array.isArray(res) ? res : (res?.data || []);   // read res.data
       const orders = Array.isArray(ordersRes) ? ordersRes : (ordersRes?.data || []);
       const orderedProductIds = new Set(
@@ -85,7 +90,7 @@ export default function RecommendedList({ user, location }) {
       setRecommended(ranked);
     }
     run().catch(console.error);
-  }, [user?._id, lat, lon]);
+  }, [user?._id, user?.role, lat, lon]);
 
   if (!recommended.length) return null;
 
