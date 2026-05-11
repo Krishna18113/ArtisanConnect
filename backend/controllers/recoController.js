@@ -12,6 +12,44 @@ function cosine(a, b) {
   return dot / (Math.sqrt(na) * Math.sqrt(nb) + 1e-12);
 }
 
+const CONTEXT_KEYWORDS = {
+  summer: ['summer', 'cool', 'cotton', 'lightweight', 'drink', 'juice', 'pickle', 'mango'],
+  monsoon: ['monsoon', 'rain', 'waterproof', 'tea', 'snack', 'spice', 'umbrella'],
+  winter: ['winter', 'warm', 'wool', 'blanket', 'shawl', 'jacket', 'sweater'],
+  'makar sankranti': ['til', 'sesame', 'jaggery', 'kite', 'sankranti', 'sweet'],
+  holi: ['holi', 'color', 'gulal', 'sweet', 'gujiya', 'thandai', 'festival'],
+  'raksha bandhan': ['rakhi', 'gift', 'sweet', 'bracelet', 'raksha bandhan'],
+  'ganesh chaturthi': ['ganesh', 'modak', 'sweet', 'decor', 'idol', 'festival'],
+  dussehra: ['dussehra', 'decor', 'gift', 'festival', 'traditional'],
+  diwali: ['diwali', 'diya', 'lamp', 'candle', 'sweet', 'gift', 'decor', 'rangoli'],
+  christmas: ['christmas', 'cake', 'gift', 'decor', 'candle', 'winter'],
+};
+
+function contextBoost(item, context) {
+  const activeContexts = [
+    context.season,
+    context.festival,
+    ...(Array.isArray(context.festivals) ? context.festivals : []),
+  ].filter(Boolean);
+
+  const keywords = [...new Set(
+    activeContexts.flatMap(key => CONTEXT_KEYWORDS[String(key).toLowerCase()] || [])
+  )];
+
+  if (!keywords.length) return 0;
+
+  const text = [
+    item.name,
+    item.category,
+    item.material,
+    item.description,
+    item.tags ? item.tags.join(' ') : '',
+  ].filter(Boolean).join(' ').toLowerCase();
+
+  const matches = keywords.filter(keyword => text.includes(keyword)).length;
+  return Math.min(matches * 0.08, 0.4);
+}
+
 exports.recommend = async (req, res) => {
   try {
     const { user_id, lat, lon, now_iso, candidate_items = [], context = {} } = req.body;
@@ -21,6 +59,8 @@ exports.recommend = async (req, res) => {
       `user=${user_id || 'guest'}`,
       `lat=${lat}`, `lon=${lon}`, `time=${now_iso || new Date().toISOString()}`,
       `festival=${context.festival || 'none'}`,
+      `festivals=${Array.isArray(context.festivals) ? context.festivals.join(',') : 'none'}`,
+      `season=${context.season || 'none'}`,
       `weather=${context.weather || 'normal'}`
     ].join('; ');
 
@@ -39,7 +79,10 @@ exports.recommend = async (req, res) => {
     const [ctxVec, ...itemVecs] = await embedTexts([ctx, ...itemTexts]);
 
     // 4) Rank by cosine similarity
-    const scored = itemVecs.map((v, i) => ({ id: itemIds[i], score: cosine(ctxVec, v) }));
+    const scored = itemVecs.map((v, i) => ({
+      id: itemIds[i],
+      score: cosine(ctxVec, v) + contextBoost(candidate_items[i], context),
+    }));
     scored.sort((a, b) => b.score - a.score);
 
     // 5) Return top N ids

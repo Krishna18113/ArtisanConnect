@@ -4,8 +4,9 @@ const mongoose = require('mongoose');
 exports.createDirectOrder = async (req, res) => {
   const { productId, quantity } = req.body;
   const { id: userId } = req.user;
+  const orderQuantity = Number(quantity);
 
-  if (!productId || !quantity) {
+  if (!productId || !Number.isFinite(orderQuantity) || orderQuantity <= 0) {
     return res.status(400).json({ msg: 'Missing required fields for creating an order.' });
   }
 
@@ -14,10 +15,20 @@ exports.createDirectOrder = async (req, res) => {
   try {
     const product = await Product.findById(productId).session(session);
     if (!product) throw new Error('Product not found');
+    if (orderQuantity < product.minOrderQty) {
+      const error = new Error(`Minimum order quantity is ${product.minOrderQty} ${product.unit}.`);
+      error.statusCode = 400;
+      throw error;
+    }
+    if (product.availableQty < orderQuantity) {
+      const error = new Error(`Only ${product.availableQty} ${product.unit} available.`);
+      error.statusCode = 400;
+      throw error;
+    }
 
     const newDirectOrder = new DirectOrder({
       productId,
-      quantity,
+      quantity: orderQuantity,
       buyer: userId,
       deliveryDate: new Date(new Date().setDate(new Date().getDate() + 7)), // Default delivery 7 days from now
     });
@@ -27,7 +38,7 @@ exports.createDirectOrder = async (req, res) => {
     res.status(201).json(newDirectOrder);
   } catch (err) {
     await session.abortTransaction();
-    res.status(500).json({ msg: err.message });
+    res.status(err.statusCode || 500).json({ msg: err.message });
   } finally {
     session.endSession();
   }

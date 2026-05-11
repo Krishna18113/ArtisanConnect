@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getProducts } from '../services/productService';
-import { createDirectOrder } from '../services/orderService';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
@@ -29,9 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useToast } from '@/components/ui/use-toast';
-
-const categories = ['All', 'Vegetables', 'Grains', 'Oils', 'Spices', 'Dairy', 'Pulses'];
+import JoinOrderDialog from '@/components/JoinOrderDialog';
 
 const haversineDistance = (coords1, coords2) => {
   const toRad = (x) => (x * Math.PI) / 180;
@@ -48,8 +45,8 @@ const haversineDistance = (coords1, coords2) => {
 
 const Products = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [showPreparedOnly, setShowPreparedOnly] = useState(false);
+  const [selectedCategory] = useState('All');
+  const [showPreparedOnly] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
@@ -59,11 +56,10 @@ const Products = () => {
   const [minRating, setMinRating] = useState('none');
   const [sortBy, setSortBy] = useState('none');
   const [sortOrder, setSortOrder] = useState('asc');
-  const [targetCurrency, setTargetCurrency] = useState('INR');
+  const [targetCurrency] = useState('INR');
 
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { toast } = useToast();
 
   useEffect(() => {
     if (locationEnabled && navigator.geolocation) {
@@ -120,17 +116,9 @@ const Products = () => {
     (p) => selectedCategory === 'All' || p.category === selectedCategory
   );
 
-  const handleOrderNow = async (p) => {
-    try {
-      await createDirectOrder(p._id, 1);
-      toast({ title: 'Order Placed!', description: `${p.name} added to your orders.` });
-    } catch (err) {
-      toast({
-        title: 'Order Failed',
-        description: err.response?.data?.msg || 'Could not place order.',
-        variant: 'destructive',
-      });
-    }
+  const handleOrderNow = (p) => {
+    setSelectedProduct(p);
+    setIsDialogOpen(true);
   };
 
   if (isError) {
@@ -343,6 +331,14 @@ const Products = () => {
           </div>
         )}
       </div>
+
+      {selectedProduct && (
+        <JoinOrderDialog
+          product={selectedProduct}
+          isOpen={isDialogOpen}
+          onClose={() => setIsDialogOpen(false)}
+        />
+      )}
     </div>
   );
 };
