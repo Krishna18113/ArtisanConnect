@@ -39,10 +39,15 @@ export default function RecommendedList({ user, location }) {
 
   useEffect(() => {
     async function run() {
+      if (user?.role !== 'buyer') {
+        setRecommended([]);
+        return;
+      }
+
       // 1) fetch products and remove anything the buyer has already ordered
       const [productsResult, ordersResult] = await Promise.allSettled([
         getProducts({}),
-        user?.role === 'buyer' ? getMyDirectOrders() : Promise.resolve({ data: [] }),
+        getMyDirectOrders(),
       ]);
 
       if (productsResult.status === 'rejected') throw productsResult.reason;
@@ -92,6 +97,7 @@ export default function RecommendedList({ user, location }) {
     run().catch(console.error);
   }, [user?._id, user?.role, lat, lon]);
 
+  if (user?.role !== 'buyer') return null;
   if (!recommended.length) return null;
 
   const gridStyle = {

@@ -107,6 +107,7 @@ exports.recommend = async (req, res) => {
       scored = await embeddingRank(ctx, candidate_items, itemIds, context);
     }
 
+    scored = scored.filter(item => item.score > 0);
     scored.sort((a, b) => b.score - a.score);
 
     // 4) Return top N ids
